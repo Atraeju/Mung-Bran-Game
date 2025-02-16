@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mung Bean Farming Game</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        #game-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            border: 2px solid black;
+            margin: 20px auto;
+            background-color: lightgreen;
+        }
+        .seed {
+            width: 40px;
+            height: 40px;
+            background-color: brown;
+            position: absolute;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mung Bean Farming Game</h1>
+    <p>Harvested Sprouts: <span id="score">0</span></p>
+    <div id="game-container">
+        <div class="seed" id="seed"></div>
+    </div>
+    <script>
+        let score = 0;
+        const seed = document.getElementById("seed");
+        const scoreDisplay = document.getElementById("score");
+        const gameContainer = document.getElementById("game-container");
+
+        function growSprout() {
+            const x = Math.floor(Math.random() * (gameContainer.clientWidth - 40));
+            const y = Math.floor(Math.random() * (gameContainer.clientHeight - 40));
+            seed.style.left = `${x}px`;
+            seed.style.top = `${y}px`;
+        }
+
+        seed.addEventListener("click", () => {
+            score++;
+            scoreDisplay.textContent = score;
+            growSprout();
+        });
+
+        growSprout();
+    </script>
+</body>
+</html>
