@@ -118,6 +118,24 @@
         const mungTokensDisplay = document.getElementById("mungTokens");
         const celebrationScreen = document.getElementById("celebration-screen");
         const gameContainer = document.getElementById("game-container");
+        const toggleModeButton = document.getElementById("toggleMode");
+        const juiceButton = document.getElementById("juiceButton");
+        const sellJuiceButton = document.getElementById("sellJuiceButton");
+
+        toggleModeButton.addEventListener("click", () => {
+            harvestingMode = !harvestingMode;
+            if (harvestingMode) {
+                toggleModeButton.textContent = "Switch to Juicing";
+                juiceButton.style.display = "none";
+                sellJuiceButton.style.display = "none";
+                seed.style.display = "block";
+            } else {
+                toggleModeButton.textContent = "Switch to Harvesting";
+                juiceButton.style.display = "inline";
+                sellJuiceButton.style.display = "inline";
+                seed.style.display = "none";
+            }
+        });
 
         function growSprout() {
             if (harvestingMode) {
