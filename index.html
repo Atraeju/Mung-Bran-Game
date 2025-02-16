@@ -28,6 +28,15 @@
             cursor: pointer;
             border: 2px solid black;
         }
+        .rare-seed {
+            width: 40px;
+            height: 40px;
+            background-color: gold;
+            position: absolute;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid black;
+        }
         #juice-container {
             margin-top: 20px;
         }
@@ -48,6 +57,19 @@
             bottom: 0;
             transition: height 0.5s;
         }
+        #celebration-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: gold;
+            font-size: 24px;
+            text-align: center;
+            padding-top: 20%;
+        }
         button {
             padding: 10px;
             font-size: 16px;
@@ -58,6 +80,7 @@
 <body>
     <h1>Mung Bean Farming Game</h1>
     <p>Harvested Sprouts: <span id="score">0</span></p>
+    <p>Rare Mung Beans: <span id="rareScore">0</span></p>
     <p>Mung Bean Juice: <span id="juiceCount">0</span></p>
     <p>Mung Tokens: <span id="mungTokens">0</span></p>
     <div id="game-container">
@@ -67,83 +90,60 @@
         <button id="toggleMode">Switch to Juicing</button>
         <button id="juiceButton" style="display: none;">Juice Sprouts</button>
         <button id="sellJuiceButton" style="display: none;">Sell Juice</button>
+        <button id="buyHarvester">Buy Robotic Harvester (200 Tokens)</button>
+        <button id="upgradeHarvester" style="display: none;">Upgrade Harvester (150 Tokens)</button>
+        <button id="buyJuicer">Buy Automated Juicer (200 Tokens)</button>
+        <button id="upgradeJuicer" style="display: none;">Upgrade Juicer (150 Tokens)</button>
+        <button id="buyLargerBeans">Buy Larger Mung Beans (100 Tokens)</button>
         <div id="juice-cup">
             <div class="juice-fill" id="juiceFill"></div>
         </div>
     </div>
+    <div id="celebration-screen">Congratulations! You collected 10 Rare Mung Beans and have become one with the Mung!</div>
     <script>
         let score = 0;
+        let rareScore = 0;
         let juice = 0;
         let mungTokens = 0;
         let harvestingMode = true;
+        let harvesterActive = false;
+        let juicerActive = false;
+        let harvesterSpeed = 1;
+        let juicerSpeed = 1;
+        let largerBeans = false;
         const seed = document.getElementById("seed");
         const scoreDisplay = document.getElementById("score");
+        const rareScoreDisplay = document.getElementById("rareScore");
         const juiceDisplay = document.getElementById("juiceCount");
         const mungTokensDisplay = document.getElementById("mungTokens");
+        const celebrationScreen = document.getElementById("celebration-screen");
         const gameContainer = document.getElementById("game-container");
-        const juiceButton = document.getElementById("juiceButton");
-        const sellJuiceButton = document.getElementById("sellJuiceButton");
-        const toggleMode = document.getElementById("toggleMode");
-        const juiceFill = document.getElementById("juiceFill");
 
         function growSprout() {
             if (harvestingMode) {
-                const x = Math.floor(Math.random() * (gameContainer.clientWidth - 40));
-                const y = Math.floor(Math.random() * (gameContainer.clientHeight - 40));
-                seed.style.left = `${x}px`;
-                seed.style.top = `${y}px`;
+                const isRare = Math.random() < 0.05;
+                const sprout = document.createElement("div");
+                sprout.className = isRare ? "rare-seed" : "seed";
+                sprout.style.left = `${Math.floor(Math.random() * (gameContainer.clientWidth - 40))}px`;
+                sprout.style.top = `${Math.floor(Math.random() * (gameContainer.clientHeight - 40))}px`;
+                gameContainer.appendChild(sprout);
+                sprout.addEventListener("click", () => {
+                    if (isRare) {
+                        rareScore++;
+                        rareScoreDisplay.textContent = rareScore;
+                        if (rareScore >= 10) {
+                            celebrationScreen.style.display = "block";
+                        }
+                    } else {
+                        score++;
+                        scoreDisplay.textContent = score;
+                    }
+                    gameContainer.removeChild(sprout);
+                });
             }
         }
 
-        seed.addEventListener("click", () => {
-            if (harvestingMode) {
-                score++;
-                scoreDisplay.textContent = score;
-                growSprout();
-            }
-        });
-
-        juiceButton.addEventListener("click", () => {
-            if (score >= 5) {
-                score -= 5;
-                juice++;
-                scoreDisplay.textContent = score;
-                juiceDisplay.textContent = juice;
-                juiceFill.style.height = `${juice * 10}px`;
-            } else {
-                alert("You need at least 5 sprouts to make juice!");
-            }
-        });
-
-        sellJuiceButton.addEventListener("click", () => {
-            if (juice > 0) {
-                juice--;
-                mungTokens += 10;
-                juiceDisplay.textContent = juice;
-                mungTokensDisplay.textContent = mungTokens;
-                juiceFill.style.height = `${juice * 10}px`;
-            } else {
-                alert("You have no juice to sell!");
-            }
-        });
-
-        toggleMode.addEventListener("click", () => {
-            harvestingMode = !harvestingMode;
-            if (harvestingMode) {
-                toggleMode.textContent = "Switch to Juicing";
-                juiceButton.style.display = "none";
-                sellJuiceButton.style.display = "none";
-                seed.style.display = "block";
-                growSprout();
-            } else {
-                toggleMode.textContent = "Switch to Harvesting";
-                juiceButton.style.display = "block";
-                sellJuiceButton.style.display = "block";
-                seed.style.display = "none";
-            }
-        });
-
-        growSprout();
+        setInterval(growSprout, 2000);
     </script>
 </body>
 </html>
