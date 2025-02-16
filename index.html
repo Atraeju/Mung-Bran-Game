@@ -20,9 +20,35 @@
         .seed {
             width: 40px;
             height: 40px;
-            background-color: brown;
+            background-color: white;
             position: absolute;
             border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid black;
+        }
+        #juice-container {
+            margin-top: 20px;
+        }
+        #juice-cup {
+            width: 60px;
+            height: 100px;
+            border: 2px solid black;
+            margin: 10px auto;
+            position: relative;
+            background-color: transparent;
+            overflow: hidden;
+        }
+        .juice-fill {
+            width: 100%;
+            height: 0;
+            background-color: lightyellow;
+            position: absolute;
+            bottom: 0;
+            transition: height 0.5s;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
             cursor: pointer;
         }
     </style>
@@ -30,26 +56,89 @@
 <body>
     <h1>Mung Bean Farming Game</h1>
     <p>Harvested Sprouts: <span id="score">0</span></p>
+    <p>Mung Bean Juice: <span id="juiceCount">0</span></p>
+    <p>Mung Tokens: <span id="mungTokens">0</span></p>
     <div id="game-container">
         <div class="seed" id="seed"></div>
     </div>
+    <div id="juice-container">
+        <button id="toggleMode">Switch to Juicing</button>
+        <button id="juiceButton" style="display: none;">Juice Sprouts</button>
+        <button id="sellJuiceButton" style="display: none;">Sell Juice</button>
+        <div id="juice-cup">
+            <div class="juice-fill" id="juiceFill"></div>
+        </div>
+    </div>
     <script>
         let score = 0;
+        let juice = 0;
+        let mungTokens = 0;
+        let harvestingMode = true;
         const seed = document.getElementById("seed");
         const scoreDisplay = document.getElementById("score");
+        const juiceDisplay = document.getElementById("juiceCount");
+        const mungTokensDisplay = document.getElementById("mungTokens");
         const gameContainer = document.getElementById("game-container");
+        const juiceButton = document.getElementById("juiceButton");
+        const sellJuiceButton = document.getElementById("sellJuiceButton");
+        const toggleMode = document.getElementById("toggleMode");
+        const juiceFill = document.getElementById("juiceFill");
 
         function growSprout() {
-            const x = Math.floor(Math.random() * (gameContainer.clientWidth - 40));
-            const y = Math.floor(Math.random() * (gameContainer.clientHeight - 40));
-            seed.style.left = `${x}px`;
-            seed.style.top = `${y}px`;
+            if (harvestingMode) {
+                const x = Math.floor(Math.random() * (gameContainer.clientWidth - 40));
+                const y = Math.floor(Math.random() * (gameContainer.clientHeight - 40));
+                seed.style.left = `${x}px`;
+                seed.style.top = `${y}px`;
+            }
         }
 
         seed.addEventListener("click", () => {
-            score++;
-            scoreDisplay.textContent = score;
-            growSprout();
+            if (harvestingMode) {
+                score++;
+                scoreDisplay.textContent = score;
+                growSprout();
+            }
+        });
+
+        juiceButton.addEventListener("click", () => {
+            if (score >= 5) {
+                score -= 5;
+                juice++;
+                scoreDisplay.textContent = score;
+                juiceDisplay.textContent = juice;
+                juiceFill.style.height = `${juice * 10}px`;
+            } else {
+                alert("You need at least 5 sprouts to make juice!");
+            }
+        });
+
+        sellJuiceButton.addEventListener("click", () => {
+            if (juice > 0) {
+                juice--;
+                mungTokens += 10;
+                juiceDisplay.textContent = juice;
+                mungTokensDisplay.textContent = mungTokens;
+                juiceFill.style.height = `${juice * 10}px`;
+            } else {
+                alert("You have no juice to sell!");
+            }
+        });
+
+        toggleMode.addEventListener("click", () => {
+            harvestingMode = !harvestingMode;
+            if (harvestingMode) {
+                toggleMode.textContent = "Switch to Juicing";
+                juiceButton.style.display = "none";
+                sellJuiceButton.style.display = "none";
+                seed.style.display = "block";
+                growSprout();
+            } else {
+                toggleMode.textContent = "Switch to Harvesting";
+                juiceButton.style.display = "block";
+                sellJuiceButton.style.display = "block";
+                seed.style.display = "none";
+            }
         });
 
         growSprout();
