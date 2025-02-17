@@ -7,21 +7,34 @@
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
         button { margin: 5px; padding: 10px; cursor: pointer; }
+        
+        #field { display: flex; justify-content: center; flex-wrap: wrap; width: 300px; margin: 10px auto; border: 2px solid green; padding: 10px; min-height: 100px; }
+        .sprout { width: 20px; height: 20px; background: green; border-radius: 50%; margin: 5px; cursor: pointer; }
+
+        #juice-container { display: flex; justify-content: center; margin: 10px auto; width: 100px; height: 100px; background: #f5d76e; border-radius: 10px; position: relative; overflow: hidden; }
+        #juice-level { width: 100%; height: 0%; background: orange; position: absolute; bottom: 0; transition: height 0.3s; }
+
         #harvest-mode { display: none; width: 100px; height: 100px; background: green; position: relative; margin: auto; }
         #target { width: 30px; height: 30px; background: white; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); cursor: pointer; }
+
+        #winScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); color: white; text-align: center; padding-top: 20%; font-size: 24px; }
     </style>
 </head>
 <body>
 
     <h1>Mung Bean Farming Game</h1>
     <p>Sprouts: <span id="sprouts">0</span></p>
+    <div id="field"></div>
+    
     <p>Harvested Sprouts: <span id="harvested">0</span></p>
     <p>Juice: <span id="juice">0</span></p>
+    <div id="juice-container"><div id="juice-level"></div></div>
+
     <p>Tokens: <span id="tokens">0</span></p>
     <p>Rare Mung Beans: <span id="rareBeans">0</span></p>
     <p>Time Played: <span id="timePlayed">0</span> seconds</p>
 
-    <button id="harvestSprout" onclick="harvestSprout()">Harvest Sprout</button>
+    <button id="harvestSprout" onclick="manualHarvest()">Harvest Sprout</button>
     <button id="juiceSprouts" onclick="juiceSprouts()">Juice Sprouts</button>
     <button id="sellJuice" onclick="sellJuice()">Sell Juice</button>
     
@@ -34,10 +47,13 @@
     <h2>Minigame</h2>
     <button onclick="toggleHarvestMode()">Toggle Harvest Mode</button>
     <div id="harvest-mode">
-        <div id="target" onclick="harvestSprout(); toggleHarvestMode();"></div>
+        <div id="target" onclick="manualHarvest(); toggleHarvestMode();"></div>
     </div>
 
-    <p id="winMessage" style="display:none; font-size: 20px; color: green;"></p>
+    <div id="winScreen">
+        <p>You have become one with the Mung!</p>
+        <p>Time spent: <span id="finalTime"></span> seconds.</p>
+    </div>
 
     <script>
         let sprouts = 0, harvested = 0, juice = 0, tokens = 0, rareBeans = 0;
@@ -45,17 +61,33 @@
         let timePlayed = 0;
         let harvesterInterval, juicerInterval;
         
-        // Sprout Generation (Automatic)
-        setInterval(() => { sprouts++; updateUI(); }, 1125);
+        // Sprout Generation (Visual & Data)
+        setInterval(() => { 
+            sprouts++;
+            updateSproutsUI();
+            updateUI();
+        }, 1125);
 
         // Time Tracker
         setInterval(() => { timePlayed++; document.getElementById('timePlayed').innerText = timePlayed; }, 1000);
 
-        function harvestSprout() {
+        function updateSproutsUI() {
+            let field = document.getElementById('field');
+            field.innerHTML = '';
+            for (let i = 0; i < sprouts; i++) {
+                let sprout = document.createElement('div');
+                sprout.classList.add('sprout');
+                sprout.onclick = manualHarvest;
+                field.appendChild(sprout);
+            }
+        }
+
+        function manualHarvest() {
             if (sprouts > 0) {
                 let amount = hasLargerBeans ? 2 : 1;
-                sprouts -= amount;
+                sprouts = Math.max(0, sprouts - amount);
                 harvested += amount;
+                updateSproutsUI();
                 updateUI();
             }
         }
@@ -64,14 +96,22 @@
             if (harvested > 0) {
                 juice += 5;
                 harvested--;
+                updateJuiceUI();
                 updateUI();
             }
         }
 
+        function updateJuiceUI() {
+            let juiceLevel = document.getElementById('juice-level');
+            let percentage = Math.min(100, (juice * 10)); 
+            juiceLevel.style.height = percentage + '%';
+        }
+
         function sellJuice() {
             if (juice > 0) {
-                tokens += juice * 10;
+                tokens += juice; 
                 juice = 0;
+                updateJuiceUI();
                 updateUI();
             }
         }
@@ -80,7 +120,7 @@
             if (tokens >= 200 && !hasHarvester) {
                 tokens -= 200;
                 hasHarvester = true;
-                harvesterInterval = setInterval(() => { harvestSprout(); }, 1000);
+                harvesterInterval = setInterval(() => { manualHarvest(); }, 1000);
                 updateUI();
             }
         }
@@ -123,16 +163,12 @@
             document.getElementById('juice').innerText = juice;
             document.getElementById('tokens').innerText = tokens;
             document.getElementById('rareBeans').innerText = rareBeans;
-
-            document.getElementById('harvestSprout').disabled = sprouts === 0;
-            document.getElementById('juiceSprouts').disabled = harvested === 0;
-            document.getElementById('sellJuice').disabled = juice === 0;
         }
 
         function checkWinCondition() {
             if (rareBeans >= 10) {
-                document.getElementById('winMessage').innerText = `You have become one with the Mung! Time spent: ${timePlayed} seconds.`;
-                document.getElementById('winMessage').style.display = 'block';
+                document.getElementById('finalTime').innerText = timePlayed;
+                document.getElementById('winScreen').style.display = 'block';
             }
         }
 
